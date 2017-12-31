@@ -17,5 +17,9 @@
   <ItemGroup>
     <None Include="GERC_V2.ino" />
   </ItemGroup>
- 
+  <ItemGroup>
+    <ClInclude Include="__vm\.GERC_V2.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
