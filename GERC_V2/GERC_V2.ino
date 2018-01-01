@@ -29,6 +29,7 @@ static const uint8_t eStopPin = PIN2;
 static const uint8_t xERPin = PIN3;
 static const uint8_t yERPin = PIN4;
 static const uint8_t enablePin = PIN5;
+static const uint8_t ledPin = LED_BUILTIN;
 
 bool eStop = true;
 bool xER = false;
@@ -37,6 +38,7 @@ bool yER = false;
 bool yERisInput = false;
 bool enable = true;
 bool prev_enable = true;
+bool led = false;
 
 enum states {
 	start,
@@ -60,6 +62,9 @@ unsigned long debounce_time = 0;
 uint16_t debouce_value = 250;
 bool debouncing = false;
 
+unsigned long blinkTime = 0;
+uint16_t blinkRate = 500;
+
 // the setup function runs once when you press reset or power the board
 void setup() {
 	Serial.begin(115200);
@@ -69,6 +74,7 @@ void setup() {
 	pinMode(xERPin, OUTPUT);
 	pinMode(yERPin, OUTPUT);
 	pinMode(enablePin, INPUT);
+	pinMode(led, OUTPUT);
 
 	mState = start;
 }
@@ -92,6 +98,7 @@ void FSM() {
 		break;
 	case error:	// triggers e-stop on BOB		
 		eStop = HIGH;
+		led = false;
 		setOutputs();
 		printValues();
 		delay(1000);
@@ -103,6 +110,7 @@ void FSM() {
 		xER = HIGH;
 		yER = HIGH;
 		eStop = false;
+		led = true;
 		setOutputs();
 		printValues();
 		delay(1000);
@@ -115,6 +123,7 @@ void FSM() {
 			printValues();
 			delay(1000);
 		}
+		blinkLed();
 		readInputs();
 		if (prev_enable == false && enable == true) {
 			mState = reset;
@@ -127,7 +136,7 @@ void FSM() {
 			yERisInput = true;
 			pinMode(yERPin, INPUT_PULLUP);
 			printValues();
-		}
+		}		
 		readInputs();
 		if (xER == LOW || yER == LOW) {
 			mState = error;
@@ -182,6 +191,15 @@ void setOutputs() {
 	if (!yERisInput) {
 		pinMode(yERPin, OUTPUT);
 		digitalWrite(yERPin, yER);
+	}
+	digitalWrite(ledPin, led);
+}
+
+void blinkLed() {
+	if (millis() - blinkTime > blinkRate) {
+		led = !led;
+		digitalWrite(ledPin, led);
+		blinkTime = millis();
 	}
 }
 
